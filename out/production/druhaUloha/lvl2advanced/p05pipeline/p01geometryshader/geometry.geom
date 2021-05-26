@@ -3,9 +3,9 @@
 //input geometry
 layout(lines_adjacency) in;
 //output geometry
-//layout(triangle_strip, max_vertices = 60) out;
+layout(triangle_strip, max_vertices = 146) out;
 //layout(points)out;
-layout(line_strip, max_vertices = 110) out;
+//layout(line_strip, max_vertices = 110) out;
 
 //input attribute 
 layout(location = 1) in vec3 vColor[];

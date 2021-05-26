@@ -39,7 +39,7 @@ public class Renderer extends AbstractRenderer{
 	List<Vec2D> vertexBufferDataPos;
 	List<Vec3D> vertexBufferDataCol;
 	private int setSides;
-	private float sides=60;
+	private float sides=11;
 
 	
 	boolean update = true, mode = false;
@@ -57,6 +57,12 @@ public class Renderer extends AbstractRenderer{
 					break;
 				case GLFW_KEY_M:
 					mode = !mode;
+					break;
+					case GLFW_KEY_KP_ADD:
+					sides = sides+5;
+					break;
+					case GLFW_KEY_KP_SUBTRACT:
+					sides = sides-5;
 					break;
 				}
 			}
