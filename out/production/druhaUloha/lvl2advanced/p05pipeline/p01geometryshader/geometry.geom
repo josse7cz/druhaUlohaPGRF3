@@ -3,30 +3,34 @@
 //input geometry
 layout(lines_adjacency) in;
 //output geometry
-layout(triangle_strip, max_vertices = 60) out;
+//layout(triangle_strip, max_vertices = 60) out;
 //layout(points)out;
-//layout(line_strip, max_vertices = 2) out;
+layout(line_strip, max_vertices = 110) out;
 
 //input attribute 
 layout(location = 1) in vec3 vColor[];
 //output attribute
 layout(location = 1) out vec3 fColor;
 
+in float vSides[];
+
+float PI= 3.1415926;
+
 void main() {
 
 
 
+	for (int i = 0; i <= vSides[0]; i++) {
+		// Angle between each side in radians
+		float ang = PI * 2.0 / vSides[0] * i;
+		fColor = vColor[2];
+		// Offset from center of point (0.3 to accomodate for aspect ratio)
+		vec4 offset = vec4(cos(ang) * 0.3, -sin(ang) * 0.4, 0.0, 0.0);
+		gl_Position = gl_in[0].gl_Position + offset;
 
-	gl_Position = gl_in[0].gl_Position + vec4(-0.1, 0.0, 0.0, 0.0);
-	fColor = vColor[1];
-	EmitVertex();
+		EmitVertex();
+	}
 
-	gl_Position = gl_in[0].gl_Position + vec4(0.1, 0.0, 0.0, 0.0);
-	fColor = vColor[2];
-	EmitVertex();
-	gl_Position = gl_in[0].gl_Position + vec4(0.0, 0.1, 0.0, 0.0);
-	fColor = vColor[2];
-	EmitVertex();
 
 	EndPrimitive();
 

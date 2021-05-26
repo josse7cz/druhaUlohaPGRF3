@@ -18,7 +18,7 @@ import java.util.Random;
 import static lwjglutils.ShaderUtils.GEOMETRY_SHADER_SUPPORT_VERSION;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL20.glUseProgram;
+import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL32.GL_LINE_STRIP_ADJACENCY;
 
 
@@ -34,9 +34,13 @@ public class Renderer extends AbstractRenderer{
 	
 	int shaderProgram;
 
+
 	List<Integer> indexBufferData;
 	List<Vec2D> vertexBufferDataPos;
 	List<Vec3D> vertexBufferDataCol;
+	private int setSides;
+	private float sides=60;
+
 	
 	boolean update = true, mode = false;
 	
@@ -90,8 +94,10 @@ public class Renderer extends AbstractRenderer{
 			}
 		}
 	};
-	
-    @Override
+
+
+
+	@Override
 	public GLFWKeyCallback getKeyCallback() {
 		return keyCallback;
 	}
@@ -120,13 +126,14 @@ public class Renderer extends AbstractRenderer{
 		indexBufferData = new ArrayList<>();
 		vertexBufferDataPos = new ArrayList<>();
 		vertexBufferDataCol = new ArrayList<>();
-		
 		vertexBufferDataPos.add(new Vec2D(-0.5f, 0.0f));
 		vertexBufferDataPos.add(new Vec2D(0.0f, 0.5));
 		vertexBufferDataPos.add(new Vec2D(0.0f, -0.5f));
 		vertexBufferDataPos.add(new Vec2D(0.5f, 0.0f));
 		vertexBufferDataPos.add(new Vec2D(0.7f, 0.5f));
 		vertexBufferDataPos.add(new Vec2D(0.9f, -0.7f));
+		setSides= glGetUniformLocation(shaderProgram, "sides");
+
 		
 		Random r = new Random();
 		for(int i = 0; i < vertexBufferDataPos.size(); i++){
@@ -141,10 +148,15 @@ public class Renderer extends AbstractRenderer{
 		OGLBuffers.Attrib[] attributesCol = {
 				new OGLBuffers.Attrib("inColor", 3)
 		};
+		OGLBuffers.Attrib[] attributesSides = {
+				new OGLBuffers.Attrib("sides", 1)
+		};
 		
 		buffers = new OGLBuffers(ToFloatArray.convert(vertexBufferDataPos), attributesPos,
 				ToIntArray.convert(indexBufferData));
 		buffers.addVertexBuffer(ToFloatArray.convert(vertexBufferDataCol), attributesCol);
+
+
 
 	}
 	
@@ -186,6 +198,10 @@ public class Renderer extends AbstractRenderer{
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 		glUseProgram(shaderProgram);
+		glUniform1f(setSides,sides);
+
+
+
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
 		
