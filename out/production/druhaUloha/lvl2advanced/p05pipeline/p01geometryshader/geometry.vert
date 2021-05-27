@@ -4,6 +4,7 @@ in vec3 inColor; // vstup z vertex bufferu
 uniform float sides;//pocet hran koule vstup
 out float vSides;//pocet hran koule vystup
 
+
 layout(location = 1) out vec3 outColor; // vystup do dalsich casti retezce
 void main() {
 	vSides=sides;

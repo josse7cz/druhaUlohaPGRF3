@@ -38,8 +38,8 @@ public class Renderer extends AbstractRenderer{
 	List<Integer> indexBufferData;
 	List<Vec2D> vertexBufferDataPos;
 	List<Vec3D> vertexBufferDataCol;
-	private int setSides;
-	private float sides=11;
+	private int setSides,locTime;
+	private float sides=11, time=0;
 
 	
 	boolean update = true, mode = false;
@@ -139,6 +139,7 @@ public class Renderer extends AbstractRenderer{
 		vertexBufferDataPos.add(new Vec2D(0.7f, 0.5f));
 		vertexBufferDataPos.add(new Vec2D(0.9f, -0.7f));
 		setSides= glGetUniformLocation(shaderProgram, "sides");
+		locTime = glGetUniformLocation(shaderProgram, "time");
 
 		
 		Random r = new Random();
@@ -205,6 +206,8 @@ public class Renderer extends AbstractRenderer{
 
 		glUseProgram(shaderProgram);
 		glUniform1f(setSides,sides);
+		glUniform1f(locTime, time);
+		time += 0.1;
 
 
 
