@@ -34,11 +34,13 @@ public class Renderer extends AbstractRenderer{
 	List<Integer> indexBufferData;
 	List<Vec2D> vertexBufferDataPos;
 	List<Vec3D> vertexBufferDataCol;
-	private int setSides,locTime,viewLocation, projectionLocation, modelLocation,fpLevel,radius,lightIntensity;;
+	private int setSides,locTime,viewLocation, projectionLocation, modelLocation,fpLevel,radius;
 	private float sides=10, time=0;
 	private Camera camera;
 	private Mat4PerspRH projection;
 	private Mat4 model;
+	private Mat4 modelViewMatrix,normalMatrix;
+
 	private double oldMx, oldMy;
 	private boolean mousePressed=false;
 
@@ -201,7 +203,7 @@ public class Renderer extends AbstractRenderer{
 		projectionLocation = glGetUniformLocation(shaderProgram, "projection");
         fpLevel=glGetUniformLocation(shaderProgram,"fpLevel");
         radius=glGetUniformLocation(shaderProgram,"radius");
-        lightIntensity=glGetAttribLocation(shaderProgram,"lightIntensity");
+     
 
 		camera = new Camera()
 				.withPosition(new Vec3D(5, 5, 5))//oddálení, přiblizeni
@@ -286,9 +288,9 @@ public class Renderer extends AbstractRenderer{
 		glUniformMatrix4fv(projectionLocation, false, projection.floatArray());
 		glUniformMatrix4fv(modelLocation, false, model.floatArray());
 		glUniformMatrix4fv(viewLocation, false, camera.getViewMatrix().floatArray());
-        glUniform1f(fpLevel,1.f);
+        glUniform1f(fpLevel,0.f);
         glUniform3f(radius,0.5f,1.0f,5.0f);
-        glUniform1f(lightIntensity,0.7f);
+
 
 
 		time += 0.1;
