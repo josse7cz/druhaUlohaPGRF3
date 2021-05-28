@@ -7,8 +7,7 @@ package p01geometryshader;
 import lwjglutils.*;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.*;
-import transforms.Vec2D;
-import transforms.Vec3D;
+import transforms.*;
 
 import java.nio.DoubleBuffer;
 import java.util.ArrayList;
@@ -31,15 +30,17 @@ import static org.lwjgl.opengl.GL32.GL_LINE_STRIP_ADJACENCY;
 public class Renderer extends AbstractRenderer{
 
 	OGLBuffers buffers;
-	
 	int shaderProgram;
-
-
 	List<Integer> indexBufferData;
 	List<Vec2D> vertexBufferDataPos;
 	List<Vec3D> vertexBufferDataCol;
-	private int setSides,locTime;
-	private float sides=11, time=0;
+	private int setSides,locTime,viewLocation, projectionLocation, modelLocation;
+	private float sides=10, time=0;
+	private Camera camera;
+	private Mat4PerspRH projection;
+	private Mat4 model;
+	private double oldMx, oldMy;
+	private boolean mousePressed=false;
 
 	
 	boolean update = true, mode = false;
@@ -50,6 +51,7 @@ public class Renderer extends AbstractRenderer{
 			if ( key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE )
 				glfwSetWindowShouldClose(window, true); // We will detect this in the rendering loop
 			if (action == GLFW_PRESS || action == GLFW_REPEAT){
+				double speed = 0.25;
 				switch (key) {
 				case GLFW_KEY_R:
 					initBuffers();
@@ -59,11 +61,32 @@ public class Renderer extends AbstractRenderer{
 					mode = !mode;
 					break;
 					case GLFW_KEY_KP_ADD:
-					sides = sides+5;
+					sides = sides+1;
 					break;
 					case GLFW_KEY_KP_SUBTRACT:
-					sides = sides-5;
+					sides = sides-1;
 					break;
+					case GLFW_KEY_W:
+						camera = camera.down(speed);
+						break;
+					case GLFW_KEY_S:
+						camera = camera.up(speed);
+						break;
+					case GLFW_KEY_A:
+						camera = camera.right(speed);
+						break;
+					case GLFW_KEY_D:
+						camera = camera.left(speed);
+						break;
+					case GLFW_KEY_F1:
+						camera = camera.forward(speed);
+						break;
+					case GLFW_KEY_F2:
+						camera = camera.backward(speed);
+						break;
+					default:
+
+
 				}
 			}
 		}
@@ -98,12 +121,42 @@ public class Renderer extends AbstractRenderer{
 				vertexBufferDataCol.add(new Vec3D(mouseX / 2 + 0.5, mouseY / 2 + 0.5, 1));
 				update = true;
 			}
+			if (button == GLFW_MOUSE_BUTTON_LEFT) {
+				double[] xPos = new double[1];
+				double[] yPos = new double[1];
+				glfwGetCursorPos(window, xPos, yPos);
+				oldMx = xPos[0];
+				oldMy = yPos[0];
+				mousePressed = action == GLFW_PRESS;
+			}
+
+		}
+	};
+
+	private final GLFWCursorPosCallback cursorPosCallback = new GLFWCursorPosCallback() {
+		@Override
+		public void invoke(long window, double x, double y) {
+			if (mousePressed) {
+				camera = camera.addAzimuth(Math.PI / 2 * (oldMx - x) / width);
+				camera = camera.addZenith(Math.PI / 2 * (oldMy - y) / height);
+				oldMx = x;
+				oldMy = y;
+			}
+		}
+	};
+
+	/*
+    mouse scroll
+     */
+	private final GLFWScrollCallback scrollCallback = new GLFWScrollCallback() {
+		@Override
+		public void invoke(long window, double xoffset, double yoffset) {
+			camera = camera.forward(xoffset);
+			camera = camera.backward(yoffset);
 		}
 	};
 
 
-
-	@Override
 	public GLFWKeyCallback getKeyCallback() {
 		return keyCallback;
 	}
@@ -120,12 +173,12 @@ public class Renderer extends AbstractRenderer{
 
 	@Override
 	public GLFWCursorPosCallback getCursorCallback() {
-		return null;
+		return cursorPosCallback;
 	}
 
 	@Override
 	public GLFWScrollCallback getScrollCallback() {
-		return null;
+		return scrollCallback;
 	}
 
 	void initBuffers() {
@@ -138,8 +191,28 @@ public class Renderer extends AbstractRenderer{
 		vertexBufferDataPos.add(new Vec2D(0.5f, 0.0f));
 		vertexBufferDataPos.add(new Vec2D(0.7f, 0.5f));
 		vertexBufferDataPos.add(new Vec2D(0.9f, -0.7f));
+
+
+
 		setSides= glGetUniformLocation(shaderProgram, "sides");
 		locTime = glGetUniformLocation(shaderProgram, "time");
+		modelLocation = glGetUniformLocation(shaderProgram, "model");
+		viewLocation = glGetUniformLocation(shaderProgram, "view");
+		projectionLocation = glGetUniformLocation(shaderProgram, "projection");
+
+
+		camera = new Camera()
+				.withPosition(new Vec3D(5, 5, 5))//oddálení, přiblizeni
+				.withAzimuth(5 / 4f * Math.PI)
+				.withZenith(-1 / 5f * Math.PI);
+
+		model = new Mat4RotY(0.001);
+		projection = new Mat4PerspRH(
+				Math.PI / 3,
+				height / (float) width,
+				0.1,
+				50
+		);
 
 		
 		Random r = new Random();
@@ -187,6 +260,7 @@ public class Renderer extends AbstractRenderer{
 		
 		initBuffers();
 		textRenderer = new OGLTextRenderer(width, height);
+		buffers=TriangleFactory.generateTriangle(20, 20);
 }
 	
 	@Override
@@ -207,6 +281,12 @@ public class Renderer extends AbstractRenderer{
 		glUseProgram(shaderProgram);
 		glUniform1f(setSides,sides);
 		glUniform1f(locTime, time);
+		glUniformMatrix4fv(projectionLocation, false, projection.floatArray());
+		glUniformMatrix4fv(modelLocation, false, model.floatArray());
+		glUniformMatrix4fv(viewLocation, false, camera.getViewMatrix().floatArray());
+
+
+
 		time += 0.1;
 
 
@@ -214,7 +294,8 @@ public class Renderer extends AbstractRenderer{
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
 		
-		buffers.draw(GL_LINE_STRIP_ADJACENCY, shaderProgram,indexBufferData.size());
+		//buffers.draw(GL_LINE_STRIP_ADJACENCY, shaderProgram,indexBufferData.size());
+		buffers.draw(GL_TRIANGLES, shaderProgram);
 
 		String text = new String(this.getClass().getName() + ": [I]nit. [M]ode");
 		

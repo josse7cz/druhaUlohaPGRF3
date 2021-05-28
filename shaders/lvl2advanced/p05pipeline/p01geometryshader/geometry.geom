@@ -2,7 +2,8 @@
 #extension GL_EXT_gpu_shader4: enable
 #extension GL_EXT_geometry_shader4: enable
 //input geometry
-layout(lines_adjacency) in;
+//layout(lines_adjacency) in;
+layout(triangles)in;
 //output geometry
 layout(triangle_strip, max_vertices = 146) out;
 //layout(points)out;
@@ -13,14 +14,12 @@ layout(location = 1) in vec3 vColor[];
 //output attribute
 layout(location = 1) out vec3 fColor;
 in float vSides[];
-
 uniform float sides;
 uniform float time;
-int uLevel= 3;
+int uLevel= 9;
 
 const float uRadius=0.30;
 
-const vec3 LIGHTPOS = vec3( 0., 10., 0. );
 vec3 V0, V01, V02;
 float PI= 3.1415926;
 
@@ -33,7 +32,6 @@ ProduceVertex( float s, float t )
     vec3 n = v;
     vec3 tnorm = normalize( n ); // the transformed normal
     vec4 ECposition = vec4( (uRadius*v), 1. );
-    float gLightIntensity = abs( dot( normalize(LIGHTPOS - ECposition.xyz), tnorm ) );
     gl_Position =  ECposition;
     EmitVertex( );
 
@@ -57,43 +55,45 @@ vec3 getNormal()
 }
 
 
-
-
 void main() {
-
-
-    V01 = ( gl_PositionIn[1] - gl_PositionIn[0] ).xyz;
-    V02 = ( gl_PositionIn[2] - gl_PositionIn[0] ).xyz;
-    V0 = gl_PositionIn[0].xyz;
-    float numLayers = sides;
-    float dt = 1./ uLevel*sides;
-    float t_top = 1.;
-    for( int it = 0; it < numLayers; it++ )
-    {
-        float t_bot = t_top - dt;
-        float smax_top = 1. - t_top;
-        float smax_bot = 1. - t_bot;
-        int nums = it + 1;
-        float ds_top = smax_top / float( nums - 1 );
-        float ds_bot = smax_bot / float( nums );
-        fColor = vColor[1];
-        float s_top = 0.;
-        float s_bot = 0.;
-        for( int is = 0; is < nums; is++ )
-        {
-            ProduceVertex( s_bot, t_bot );
-            ProduceVertex( s_top, t_top );
-            fColor = vColor[1];
-            s_top += ds_top;
-            s_bot += ds_bot;
-        }
-        ProduceVertex( s_bot, t_bot );
-        fColor = vColor[1];
-        EndPrimitive( );
-        t_top = t_bot;
-        t_bot -= dt;
-    }
-
+//pokus
+//    V01 = ( gl_PositionIn[1] - gl_PositionIn[0] ).xyz;
+//    V02 = ( gl_PositionIn[2] - gl_PositionIn[0] ).xyz;
+//    V0 = gl_PositionIn[0].xyz;
+//    float numLayers = sides;
+//    float dt = 1./ uLevel*sides;
+//    float t_top = 1.;
+//
+//
+//    for( int it = 0; it < numLayers; it++ )
+//    {
+//        float t_bot = t_top - dt;
+//        float smax_top = 1. - t_top;
+//        float smax_bot = 1. - t_bot;
+//        int nums = it + 1;
+//        float ds_top = smax_top / float( nums - 1 );
+//        float ds_bot = smax_bot / float( nums );
+//        fColor = vColor[1];
+//        float s_top = 0.;
+//        float s_bot = 0.;
+//
+//        for( int is = 0; is < nums; is++ )
+//        {
+//            ProduceVertex( s_bot, t_bot );
+//            ProduceVertex( s_top, t_top );
+//            fColor = vColor[1];
+//            s_top += ds_top;
+//            s_bot += ds_bot;
+//            fColor = vColor[1];
+//            EmitVertex();
+//        }
+//        ProduceVertex( s_bot, t_bot );
+//        fColor = vColor[0];
+//        EndPrimitive( );
+//        t_top = t_bot;
+//        t_bot -= dt;
+//    }
+//pokus
 
 
 
@@ -101,18 +101,18 @@ void main() {
 
 
     //kruh
-//    for (int i = 0; i <= vSides[0]; i++) {
-//        // Angle between each side in radians
-//        float ang = PI * 2.0 / vSides[0] * i;
-//        fColor = vColor[1];
-//        // Offset from center of point (0.3 to accomodate for aspect ratio)
-//        vec4 offset = vec4(cos(ang) * 0.3, -sin(ang) * 0.4, 0.0, 0.0);
-//        gl_Position = gl_in[0].gl_Position + offset;
-//
-//
-//        EmitVertex();
-//    }
-//    EndPrimitive();
+    for (int i = 0; i <= vSides[0]; i++) {
+        // Angle between each side in radians
+        float ang = PI * 2.0 / vSides[0] * i;
+        fColor = vColor[1];
+        // Offset from center of point (0.3 to accomodate for aspect ratio)
+        vec4 offset = vec4(cos(ang) * 0.3, -sin(ang) * 0.4, 0.0, 0.0);
+        gl_Position = gl_in[0].gl_Position + offset;
+
+
+        EmitVertex();
+    }
+    EndPrimitive();
     //kruh
 
 
