@@ -19,6 +19,7 @@ uniform mat4 model,view,projection;
 uniform mat3 normalMatrix;
 
 
+
 ///
 uniform int uLevel;
 uniform float uRadius;
@@ -34,8 +35,10 @@ void produceVertex( float s, float t )
     v = normalize(v);
     vec3 n = v;
     mat4 modelingMatrix=model*view;
-
     vec3 tnorm = normalize( normalMatrix*n ); // the transformed normal transpose(inverse(model*view)) *
+    vec3 normalTrans=transpose(inverse(mat3(view*model)))*tnorm;
+   // vec3 tangentTrans=mat3(view*model)*tangent;//tecny vektor
+
     vec4 ECposition = modelingMatrix * vec4( (uRadius*v), 1. );
     gLightIntensity = abs( dot( normalize(LIGHTPOS - ECposition.xyz), tnorm ) );
     gl_Position = projection * ECposition;

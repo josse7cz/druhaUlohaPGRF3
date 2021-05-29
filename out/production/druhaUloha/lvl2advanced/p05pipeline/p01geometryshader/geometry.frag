@@ -6,6 +6,6 @@ in float gLightIntensity;
 
 void main() {
 	//outColor = vec4(inColor, 1.0);
-	outColor=vec4(gLightIntensity*uColor.rgb,1);
+	outColor=vec4(gLightIntensity*uColor.rgb+inColor.rgb,1);
 
 } 
