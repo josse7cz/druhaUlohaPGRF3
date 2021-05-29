@@ -34,7 +34,7 @@ void produceVertex( float s, float t )
     vec3 v = V0 + s*V01 + t*V02;
     v = normalize(v);
     vec3 n = v;
-    mat4 modelingMatrix=model*view;
+    mat4 modelingMatrix=view*model;
     vec3 tnorm = normalize( normalMatrix*n ); // the transformed normal transpose(inverse(model*view)) *
     vec3 normalTrans=transpose(inverse(mat3(view*model)))*tnorm;
    // vec3 tangentTrans=mat3(view*model)*tangent;//tecny vektor
